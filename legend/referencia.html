@@ -1,0 +1,43 @@
+<!--
+  legend/referencia.html
+  Referencia visual de colores y símbolos de la leyenda.
+  No es parte del mapa — es para documentación o impresión.
+-->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Leyenda de referencia</title>
+  <style>
+    body { font-family: 'Century Gothic', 'Futura', sans-serif; padding: 24px; max-width: 340px; }
+    h2   { font-size: 15px; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 16px; color: #333; }
+    h3   { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: #888; margin: 14px 0 6px; }
+    .row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; font-size: 13px; color: #333; }
+    .swatch { width: 24px; height: 18px; border-radius: 4px; border: 1.5px solid rgba(0,0,0,.2); flex-shrink: 0; }
+    svg  { width: 24px; height: 18px; flex-shrink: 0; }
+  </style>
+</head>
+<body>
+  <h2>Leyenda</h2>
+
+  <h3>Categorías</h3>
+  <div class="row"><div class="swatch" style="background:#7EC8A4;border-color:#5BAA82"></div> Conservación</div>
+  <div class="row"><div class="swatch" style="background:#7AB3D4;border-color:#4A8FB5"></div> Preservación</div>
+  <div class="row"><div class="swatch" style="background:#F4A96A;border-color:#C87830"></div> Restauración</div>
+  <div class="row"><div class="swatch" style="background:#C39BD3;border-color:#9B6DB5"></div> Transición ecológica</div>
+
+  <h3>Subcategorías</h3>
+  <div class="row">
+    <svg viewBox="0 0 24 18"><line x1="2" y1="9" x2="22" y2="9" stroke="#E05C8A" stroke-width="2.5" stroke-dasharray="8,4" stroke-linecap="round"/></svg>
+    Conservación - Bañistas
+  </div>
+  <div class="row">
+    <svg viewBox="0 0 24 18"><line x1="2" y1="9" x2="22" y2="9" stroke="#C07800" stroke-width="2.5" stroke-dasharray="4,4" stroke-linecap="round"/></svg>
+    Conservación - NWZ
+  </div>
+  <div class="row">
+    <svg viewBox="0 0 24 18"><line x1="2" y1="9" x2="22" y2="9" stroke="#2A9AA8" stroke-width="2.5" stroke-dasharray="12,4" stroke-linecap="round"/></svg>
+    Conservación - No Anclaje
+  </div>
+</body>
+</html>

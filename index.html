@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reserva Natural de la Parguera</title>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <!-- Estilos propios -->
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ── MAPA ── -->
+  <div id="map"></div>
+
+  <!-- ── SELECTOR DE MAPA BASE ── -->
+  <div id="basemap-control">
+    <label>Mapa base</label>
+    <button class="basemap-btn" data-basemap="osm">
+      <span class="btn-icon">🗺</span> OpenStreetMap
+    </button>
+    <button class="basemap-btn active" data-basemap="satelite">
+      <span class="btn-icon">🛰</span> ESRI - Satelital
+    </button>
+    <button class="basemap-btn" data-basemap="esri_hybrid">
+      <span class="btn-icon">🌐</span> ESRI - Híbrido
+    </button>
+  </div>
+
+  <!-- ── LEYENDA ── -->
+  <div id="legend">
+    <button id="legend-toggle" title="Colapsar/expandir">▼</button>
+    <h3>Leyenda</h3>
+    <div id="legend-body">
+      <!-- Se construye dinámicamente desde map.js -->
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Lógica del mapa -->
+  <script src="js/map.js"></script>
+
+  <script>
+    // Inicializar el mapa
+    const map = L.map('map').setView([19.4326, -99.1332], 12);
+
+    // Mapas base
+    const basemaps = {
+        osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }),
+        satelite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: '© Esri'
+        }),
+        google_hybrid: L.tileLayer(
+            'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
+            {
+                attribution: '© Google Maps',
+                maxZoom: 20
+            }
+        )
+    };
+
+    // Agregar mapa base satelital
+    basemaps.satelite.addTo(map);
+
+    // ==========================================
+    // TUS CAPAS GEOJSON DESDE LA CARPETA /data
+    // ==========================================
+    
+    let capaCategorias = null;
+    let capaSubcategorias = null;
+
+    // Cargar Categorías
+    fetch('data/categorias.geojson')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Error HTTP: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            capaCategorias = L.geoJSON(data, {
+                style: {
+                    color: '#ff4444',
+                    weight: 3,
+                    fillColor: '#ff8888',
+                    fillOpacity: 0.3
+                },
+                onEachFeature: function(feature, layer) {
+                    if (feature.properties) {
+                        let nombre = feature.properties.nombre || feature.properties.NOMBRE || 'Categoría';
+                        layer.bindPopup(`<strong>${nombre}</strong>`);
+                    }
+                }
+            }).addTo(map);
+            console.log('Categorías cargadas correctamente');
+            
+            // Ajustar vista a los datos
+            if (capaCategorias.getBounds().isValid()) {
+                map.fitBounds(capaCategorias.getBounds());
+            }
+        })
+        .catch(error => {
+            console.error('Error cargando categorias.geojson:', error);
+        });
+
+    // Cargar Subcategorías
+    fetch('data/subcategorias.geojson')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Error HTTP: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            capaSubcategorias = L.geoJSON(data, {
+                style: {
+                    color: '#44ff44',
+                    weight: 2,
+                    fillColor: '#88ff88',
+                    fillOpacity: 0.2
+                },
+                onEachFeature: function(feature, layer) {
+                    if (feature.properties) {
+                        let nombre = feature.properties.nombre || feature.properties.NOMBRE || 'Subcategoría';
+                        layer.bindPopup(`<strong>${nombre}</strong>`);
+                    }
+                }
+            }).addTo(map);
+            console.log('Subcategorías cargadas correctamente');
+            
+            // Ajustar vista combinada
+            if (capaCategorias && capaCategorias.getBounds().isValid() && capaSubcategorias.getBounds().isValid()) {
+                const bounds = capaCategorias.getBounds().extend(capaSubcategorias.getBounds());
+                map.fitBounds(bounds);
+            } else if (capaSubcategorias && capaSubcategorias.getBounds().isValid()) {
+                map.fitBounds(capaSubcategorias.getBounds());
+            }
+        })
+        .catch(error => {
+            console.error('Error cargando subcategorias.geojson:', error);
+        });
+        // Cargar La Parguera
+    // ===============================
+// CARGAR LA PARGUERA
+// ===============================
+
+fetch('data/laparguera.gjson')
+
+    .then(response => {
+
+        console.log('STATUS:', response.status);
+
+        if (!response.ok) {
+            throw new Error('No se encontró el archivo');
+        }
+
+        return response.json();
+    })
+
+    .then(data => {
+
+        console.log('DATA:', data);
+
+        const capaLaParguera = L.geoJSON(data, {
+
+            style: function(feature) {
+
+                return {
+                    color: '#ff00ff',
+                    weight: 5,
+                    opacity: 1,
+                    fillColor: '#ff00ff',
+                    fillOpacity: 0.5
+                };
+            },
+
+            pointToLayer: function(feature, latlng) {
+
+                return L.circleMarker(latlng, {
+                    radius: 10,
+                    fillColor: '#ff00ff',
+                    color: '#000',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 1
+                });
+            },
+
+            onEachFeature: function(feature, layer) {
+
+                console.log('FEATURE:', feature);
+
+                layer.bindPopup(`
+                    <pre>${JSON.stringify(feature.properties, null, 2)}</pre>
+                `);
+            }
+
+        }).addTo(map);
+
+        console.log('CAPA AÑADIDA');
+
+        if (capaLaParguera.getBounds().isValid()) {
+
+            console.log('BOUNDS:', capaLaParguera.getBounds());
+
+            map.fitBounds(capaLaParguera.getBounds());
+
+        } else {
+
+            console.log('SIN BOUNDS VÁIDOS');
+        }
+
+    })
+
+    .catch(error => {
+
+        console.error('ERROR:', error);
+
+    });
+
+    // Construir leyenda
+    function construirLeyenda() {
+        const legendBody = document.getElementById('legend-body');
+        if (!legendBody) return;
+        
+        legendBody.innerHTML = `
+            <div class="legend-item">
+                <span class="legend-color" style="background: #ff4444; width: 20px; height: 20px; display: inline-block; border: 1px solid #ff4444;"></span>
+                <span>Categorías</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: #44ff44; width: 20px; height: 20px; display: inline-block; border: 1px solid #44ff44;"></span>
+                <span>Subcategorías</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: #0080ff; width: 20px; height: 20px; display: inline-block; border: 1px solid #0080ff;"></span>
+                <span>RN La Parguera</span>
+            </div>
+            <div class="legend-item">
+            <span class="legend-color"
+                style="
+                width: 20px;
+                height: 3px;
+                background: #ff0202;
+                display: inline-block;
+                ">
+            </span>
+
+            <span>Parguera (límites)</span>
+            </div>
+                        
+                       
+        `;
+    }
+
+    construirLeyenda();
+
+    // Toggle leyenda
+    const legendToggle = document.getElementById('legend-toggle');
+    const legendBody = document.getElementById('legend-body');
+
+    if (legendToggle) {
+        legendToggle.addEventListener('click', () => {
+            if (legendBody.style.display === 'none') {
+                legendBody.style.display = 'block';
+                legendToggle.textContent = '▼';
+            } else {
+                legendBody.style.display = 'none';
+                legendToggle.textContent = '▲';
+            }
+        });
+    }
+
+    // Redimensionar mapa
+    setTimeout(() => {
+        map.invalidateSize();
+    }, 100);
+  </script>
+<!-- Logo Estudios Técnicos -->
+<a href="https://www.estudiostecnicos.com" target="_blank" id="logo-estudios" style="
+    position: fixed;
+    bottom: 12px;
+    left: 55px;
+    height: 55px;
+    z-index: 9999;
+    display: block;">
+    <img src="https://estudiostecnicos.com/wp-content/uploads/2021/01/logo-trasnparente.png" 
+         alt="Estudios Técnicos Inc." 
+         style="height: 100%; display: block;">
+</a>
+<div id="banner-aviso" style="
+    position: fixed;
+    bottom: 12px;
+    left: 185px;
+    background: rgba(255, 255, 255, 0.671);
+    border: 1px solid #999;
+    border-left: 5px solid #E81426;
+    padding: 10px 14px;
+    font-family: 'Century Gothic', sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+    color: #333;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    border-radius: 6px;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    max-width: 320px;">
+    <span style="margin-right: 8px; color: #E81426; font-size: 18px; transform: scale(1.3); display: inline-block;">⚠️</span>
+    <span style="flex-grow: 1;">El contenido mostrado es referencial y no representa información oficial.</span>
+</div>
+</body>
+</html>
