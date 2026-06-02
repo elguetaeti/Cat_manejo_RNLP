@@ -14,7 +14,7 @@ const CONFIG = {
   // Colores de Categorías (relleno pastel semitransparente)
   categorias: {
     'Conservación':       { color: '#5BAA82', fill: '#7EC8A4', fillOpacity: 0.45 },
-    'Preservación':       { color: '#0cebeb', fill: '#7AB3D4', fillOpacity: 0.45 },
+    'Preservación':       { color: '#006666', fill: '#03f3fc', fillOpacity: 0.45 },
     'Restauración':       { color: '#C87830', fill: '#F4A96A', fillOpacity: 0.45 },
     'Transición ecológica':{ color: '#9B6DB5', fill: '#C39BD3', fillOpacity: 0.6 },
   },
